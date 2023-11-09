@@ -1,4 +1,7 @@
 numpy
 Pillow
 streamlit-image-coordinates
-opencv-python-headless
+opencv-python
+pandas
+plotly
+protobuf
