@@ -22,9 +22,9 @@ if "current_image" not in st.session_state:
             current_image = Image.open(uploaded_image)
             original_height, original_width = current_image.size
             aspect_ratio = original_width / original_height
-            new_height = int(800 * aspect_ratio)
+            new_height = int(1200 * aspect_ratio)
 
-            resized_image = cv2.resize(np.array(current_image), (800, new_height))
+            resized_image = cv2.resize(np.array(current_image), (1200, new_height))
             st.session_state["current_image"] = resized_image
             st.experimental_rerun()
 
