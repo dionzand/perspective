@@ -86,16 +86,22 @@ else:
 
             mask = cv2.cvtColor(image_difference, cv2.COLOR_BGR2GRAY)
 
+            green_mask = cv2.cvtColor(green_channel, cv2.COLOR_BGR2GRAY)
             with st.sidebar:
-                th = st.number_input("Threshold", min_value=0, max_value=255, value=1, step=1)
+                mask_threshold = st.number_input("Mask threshold", min_value=0, max_value=255, value=10, step=1)
+            _, binary_mask = cv2.threshold(green_mask, mask_threshold, 255, cv2.THRESH_BINARY)
+            num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(binary_mask, connectivity=8)
 
-            imask = mask > th
+            with st.sidebar:
+                min_size = st.number_input("Min size", min_value=0, max_value=1000, value=10, step=1)
+            result_mask = np.zeros_like(green_mask, dtype=np.uint8)
 
-            canvas = np.zeros_like(HSV_img, np.uint8)
-            canvas[imask] = HSV_img[imask]
+            for i in range(1, num_labels):
+                if stats[i, cv2.CC_STAT_AREA] >= min_size:
+                    result_mask[labels == i] = 255
 
             st.write("Mask")
-            st.image(canvas)
+            st.image(result_mask)
 
         if st.button("Go to next image"):
             st.session_state["previous_image"] = HSV_img
