@@ -70,40 +70,61 @@ else:
             st.write("Difference with previous image")
             st.image(image_difference)
 
-            red_channel = image_difference.copy()
-            red_channel[:, :, 1] = 0
-            red_channel[:, :, 2] = 0
-            red_channel = cv2.convertScaleAbs(red_channel, alpha=contrast, beta=brightness)
-            st.write("Unique previous image")
-            st.image(red_channel)
+            col1, col2 = st.columns(2)
 
-            green_channel = image_difference.copy()
-            green_channel[:, :, 0] = 0
-            green_channel[:, :, 2] = 0
-            green_channel = cv2.convertScaleAbs(green_channel, alpha=contrast, beta=brightness)
-            st.write("Unique current image")
-            st.image(green_channel)
+            with col1:
+                red_channel = image_difference.copy()
+                red_channel[:, :, 1] = 0
+                red_channel[:, :, 2] = 0
+                red_channel = cv2.convertScaleAbs(red_channel, alpha=contrast, beta=brightness)
+                st.write("Unique previous image")
+                st.image(red_channel)
 
-            mask = cv2.cvtColor(image_difference, cv2.COLOR_BGR2GRAY)
+                red_mask = cv2.cvtColor(red_channel, cv2.COLOR_BGR2GRAY)
+                with st.sidebar:
+                    mask_threshold = st.number_input("Red mask threshold", min_value=0, max_value=255, value=10, step=1,
+                                                     help="Minimal value (0-255) of pixel to be included in mask")
+                _, binary_mask = cv2.threshold(red_mask, mask_threshold, 255, cv2.THRESH_BINARY)
+                num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(binary_mask, connectivity=8)
 
-            green_mask = cv2.cvtColor(green_channel, cv2.COLOR_BGR2GRAY)
-            with st.sidebar:
-                mask_threshold = st.number_input("Mask threshold", min_value=0, max_value=255, value=10, step=1,
-                                                 help="Minimal value (0-255) of pixel to be included in mask")
-            _, binary_mask = cv2.threshold(green_mask, mask_threshold, 255, cv2.THRESH_BINARY)
-            num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(binary_mask, connectivity=8)
+                with st.sidebar:
+                    min_size = st.number_input("Red min size", min_value=0, max_value=1000, value=10, step=1,
+                                               help="Minimal size of pixel cluster to be included in mask")
+                red_result_mask = np.zeros_like(red_mask, dtype=np.uint8)
 
-            with st.sidebar:
-                min_size = st.number_input("Min size", min_value=0, max_value=1000, value=10, step=1,
-                                           help="Minimal size of pixel cluster to be included in mask")
-            result_mask = np.zeros_like(green_mask, dtype=np.uint8)
+                for i in range(1, num_labels):
+                    if stats[i, cv2.CC_STAT_AREA] >= min_size:
+                        red_result_mask[labels == i] = 255
 
-            for i in range(1, num_labels):
-                if stats[i, cv2.CC_STAT_AREA] >= min_size:
-                    result_mask[labels == i] = 255
+                st.write("Mask previous image")
+                st.image(red_result_mask)
 
-            st.write("Mask")
-            st.image(result_mask)
+            with col2:
+                green_channel = image_difference.copy()
+                green_channel[:, :, 0] = 0
+                green_channel[:, :, 2] = 0
+                green_channel = cv2.convertScaleAbs(green_channel, alpha=contrast, beta=brightness)
+                st.write("Unique current image")
+                st.image(green_channel)
+
+                green_mask = cv2.cvtColor(green_channel, cv2.COLOR_BGR2GRAY)
+                with st.sidebar:
+                    mask_threshold = st.number_input("Green mask threshold", min_value=0, max_value=255, value=10, step=1,
+                                                     help="Minimal value (0-255) of pixel to be included in mask")
+                _, binary_mask = cv2.threshold(green_mask, mask_threshold, 255, cv2.THRESH_BINARY)
+                num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(binary_mask, connectivity=8)
+
+                with st.sidebar:
+                    min_size = st.number_input("Green min size", min_value=0, max_value=1000, value=10, step=1,
+                                               help="Minimal size of pixel cluster to be included in mask")
+                green_result_mask = np.zeros_like(green_mask, dtype=np.uint8)
+
+                for i in range(1, num_labels):
+                    if stats[i, cv2.CC_STAT_AREA] >= min_size:
+                        green_result_mask[labels == i] = 255
+
+                st.write("Mask current image")
+                st.image(green_result_mask)
 
         if st.button("Go to next image"):
             st.session_state["previous_image"] = HSV_img
