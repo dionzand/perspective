@@ -70,6 +70,20 @@ else:
             st.write("Difference with previous image")
             st.image(image_difference)
 
+            red_channel = image_difference.copy()
+            red_channel[:, :, 0] = 0
+            red_channel[:, :, 2] = 0
+            red_channel = cv2.convertScaleAbs(red_channel, alpha=contrast, beta=brightness)
+            st.write("Unique previous image")
+            st.image(red_channel)
+
+            green_channel = image_difference.copy()
+            green_channel[:, :, 0] = 0
+            green_channel[:, :, 2] = 0
+            green_channel = cv2.convertScaleAbs(green_channel, alpha=contrast, beta=brightness)
+            st.write("Unique current image")
+            st.image(green_channel)
+
             mask = cv2.cvtColor(image_difference, cv2.COLOR_BGR2GRAY)
 
             with st.sidebar:
