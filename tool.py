@@ -71,8 +71,8 @@ else:
             st.image(image_difference)
 
             red_channel = image_difference.copy()
-            red_channel[:, :, 0] = 0
             red_channel[:, :, 1] = 0
+            red_channel[:, :, 2] = 0
             red_channel = cv2.convertScaleAbs(red_channel, alpha=contrast, beta=brightness)
             st.write("Unique previous image")
             st.image(red_channel)
