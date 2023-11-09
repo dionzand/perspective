@@ -88,12 +88,14 @@ else:
 
             green_mask = cv2.cvtColor(green_channel, cv2.COLOR_BGR2GRAY)
             with st.sidebar:
-                mask_threshold = st.number_input("Mask threshold", min_value=0, max_value=255, value=10, step=1)
+                mask_threshold = st.number_input("Mask threshold", min_value=0, max_value=255, value=10, step=1,
+                                                 help="Minimal value (0-255) of pixel to be included in mask")
             _, binary_mask = cv2.threshold(green_mask, mask_threshold, 255, cv2.THRESH_BINARY)
             num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(binary_mask, connectivity=8)
 
             with st.sidebar:
-                min_size = st.number_input("Min size", min_value=0, max_value=1000, value=10, step=1)
+                min_size = st.number_input("Min size", min_value=0, max_value=1000, value=10, step=1,
+                                           help="Minimal size of pixel cluster to be included in mask")
             result_mask = np.zeros_like(green_mask, dtype=np.uint8)
 
             for i in range(1, num_labels):
